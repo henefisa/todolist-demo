@@ -3,10 +3,16 @@ import { Todo } from "../../models/Todo";
 
 interface TodoState {
   todos: Todo[];
+  filter: {
+    status: boolean | "ALL";
+  };
 }
 
 const initialState: TodoState = {
   todos: [],
+  filter: {
+    status: "ALL",
+  },
 };
 
 const todoSlice = createSlice({
@@ -29,8 +35,15 @@ const todoSlice = createSlice({
         todo.id === action.payload ? { ...todo, status: !todo.status } : todo
       );
     },
+    filterStatus(state, action: PayloadAction<boolean | "ALL">) {
+      state.filter = {
+        ...state.filter,
+        status: action.payload,
+      };
+    },
   },
 });
 
-export const { add, remove, edit, toggleStatus } = todoSlice.actions;
+export const { add, remove, edit, toggleStatus, filterStatus } =
+  todoSlice.actions;
 export default todoSlice.reducer;
