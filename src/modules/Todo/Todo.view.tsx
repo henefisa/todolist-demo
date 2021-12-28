@@ -80,7 +80,7 @@ const Todo: React.FC = () => {
         <Select.Option value={true}>Completed</Select.Option>
         <Select.Option value={false}>Inprogress</Select.Option>
       </Select>
-      <TodoList>
+      <TodoList isEmpty={!filtered.length}>
         {filtered.length ? (
           filtered.map((todo) => (
             <TodoListItem key={todo.id} status={todo.status}>

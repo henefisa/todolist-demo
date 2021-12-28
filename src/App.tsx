@@ -1,7 +1,9 @@
 import styled from "styled-components";
+import { QueryClient, QueryClientProvider } from "react-query";
 
-// views
-import Todo from "./modules/Todo/Todo.view";
+// router
+import { BrowserRouter } from "react-router-dom";
+import Router from "./routes/Router";
 
 // css
 import "antd/dist/antd.min.css";
@@ -15,11 +17,17 @@ const StyledApp = styled.div`
   padding: 0 15px;
 `;
 
+const queryClient = new QueryClient();
+
 const App: React.FC = () => {
   return (
-    <StyledApp>
-      <Todo />
-    </StyledApp>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <StyledApp>
+          <Router />
+        </StyledApp>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 

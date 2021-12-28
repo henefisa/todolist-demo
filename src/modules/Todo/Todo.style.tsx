@@ -12,9 +12,16 @@ export const TodoBox = styled.div`
   flex-direction: column;
 `;
 
-export const TodoList = styled(List)`
+export const TodoList = styled(({ isEmpty, ...rest }) => <List {...rest} />)<{
+  isEmpty: boolean;
+}>`
   overflow: auto;
   flex-grow: 1;
+  ${({ isEmpty }) =>
+    isEmpty &&
+    `
+    display: grid;
+    place-items: center;`}
 `;
 
 export const TodoListItem = styled(List.Item)<{ status: boolean }>`
