@@ -24,7 +24,11 @@ export const TodoList = styled(({ isEmpty, ...rest }) => <List {...rest} />)<{
     place-items: center;`}
 `;
 
-export const TodoListItem = styled(List.Item)<{ status: boolean }>`
+export const TodoListItem = styled(({ status, ...rest }) => (
+  <List.Item {...rest} />
+))<{
+  status: boolean;
+}>`
   align-items: center;
   cursor: pointer;
 
@@ -38,8 +42,8 @@ export const TodoListItem = styled(List.Item)<{ status: boolean }>`
     ${({ status }) =>
       status &&
       `
-  color: #bbb;
-`}
+      color: #bbb;
+      `}
     &::after {
       content: "";
       position: absolute;
@@ -57,17 +61,5 @@ export const TodoListItem = styled(List.Item)<{ status: boolean }>`
       transform: translateY(-50%) scaleX(1)
     `}
     }
-  }
-`;
-
-export const TodoDeleteButton = styled.button`
-  cursor: pointer;
-  background: none;
-  color: #bbb;
-  transition: color 0.3s;
-  border: none;
-  jusitfy-self: flex-end;
-  &:hover {
-    color: #ef4444;
   }
 `;

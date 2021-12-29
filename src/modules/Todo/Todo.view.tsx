@@ -1,10 +1,12 @@
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { nanoid } from "nanoid";
+import { useMutation, useQuery } from "react-query";
+import { AxiosResponse } from "axios";
 
 // components
-import { DeleteOutlined } from "@ant-design/icons";
-import { Empty, Form, Select, Typography } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Empty, Form, Select, Space, Typography } from "antd";
 import CheckBox from "../../components/CheckBox/CheckBox";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
@@ -15,19 +17,19 @@ import {
   addTodo,
   filterTodoStatus,
   removeTodo,
+  setTodos,
+  editTodo,
   toggleTodoStatus,
 } from "../../store/slices/todoSlice";
 
 // styles
-import {
-  TodoBox,
-  TodoDeleteButton,
-  TodoList,
-  TodoListItem,
-} from "./Todo.style";
+import { TodoBox, TodoList, TodoListItem } from "./Todo.style";
 
 // models
 import { Todo as TodoModel } from "../../models/Todo";
+
+// apis
+import * as apis from "../../apis";
 
 interface FormValues {
   content: string;
@@ -37,6 +39,42 @@ const Todo: React.FC = () => {
   const [form] = Form.useForm();
   const { todos, filter } = useSelector((state: RootState) => state.todos);
   const dispatch = useDispatch();
+  const [todo, setTodo] = React.useState<TodoModel | null>(null);
+
+  const createTodo = useMutation(apis.createTodo, {
+    onSuccess: (response) => {
+      dispatch(addTodo(response.data));
+    },
+  });
+
+  const deleteTodo = useMutation(apis.deleteTodo, {
+    onSuccess: (_, id) => {
+      dispatch(removeTodo(id));
+    },
+  });
+
+  const updateTodo = useMutation(apis.updateTodo, {
+    onSuccess: (response) => {
+      dispatch(editTodo(response.data));
+    },
+  });
+
+  const { data, isLoading, isError, error } = useQuery<
+    AxiosResponse<TodoModel[]>,
+    Error
+  >("todos", apis.fetchTodos);
+
+  React.useEffect(() => {
+    if (!isLoading && data) {
+      dispatch(setTodos(data.data));
+    }
+  }, [data, isLoading, dispatch]);
+
+  React.useEffect(() => {
+    if (isError) {
+      console.log(error);
+    }
+  }, [isError, error]);
 
   const filtered =
     filter.status === "ALL"
@@ -44,14 +82,25 @@ const Todo: React.FC = () => {
       : todos.filter((todo) => todo.status === filter.status);
 
   const handleFinish = (values: FormValues) => {
-    const todo: TodoModel = {
-      id: nanoid(12),
-      content: values.content,
-      status: false,
-    };
-
-    dispatch(addTodo(todo));
+    if (todo) {
+      const inputTodo: TodoModel = {
+        ...todo,
+        content: values.content,
+      };
+      updateTodo.mutate(inputTodo);
+    } else {
+      const inputTodo: TodoModel = {
+        id: nanoid(12),
+        content: values.content,
+        status: false,
+      };
+      createTodo.mutate(inputTodo);
+    }
     form.resetFields();
+  };
+
+  const handleDelete = async (id: string) => {
+    deleteTodo.mutate(id);
   };
 
   return (
@@ -66,7 +115,9 @@ const Todo: React.FC = () => {
           <Input placeholder="Add your todo here" />
         </Form.Item>
         <Form.Item style={{ marginRight: 0 }}>
-          <Button htmlType="submit">Add</Button>
+          <Button htmlType="submit" disabled={createTodo.isLoading}>
+            {todo ? "Save" : "Add"}
+          </Button>
         </Form.Item>
       </Form>
       <Select
@@ -94,9 +145,24 @@ const Todo: React.FC = () => {
               >
                 {todo.content}
               </Typography.Title>
-              <TodoDeleteButton onClick={() => dispatch(removeTodo(todo.id))}>
-                <DeleteOutlined />
-              </TodoDeleteButton>
+              <Space>
+                <Button
+                  type="link"
+                  onClick={() => {
+                    setTodo(todo);
+                    form.setFieldsValue({ content: todo.content });
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+                <Button
+                  type="link"
+                  danger
+                  onClick={() => handleDelete(todo.id)}
+                >
+                  <DeleteOutlined />
+                </Button>
+              </Space>
             </TodoListItem>
           ))
         ) : (
