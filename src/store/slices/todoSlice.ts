@@ -41,6 +41,9 @@ const todoSlice = createSlice({
         status: action.payload,
       };
     },
+    setTodos(state, action: PayloadAction<Todo[]>) {
+      state.todos = action.payload;
+    },
   },
 });
 
@@ -50,5 +53,6 @@ export const {
   editTodo,
   toggleTodoStatus,
   filterTodoStatus,
+  setTodos,
 } = todoSlice.actions;
 export default todoSlice.reducer;
